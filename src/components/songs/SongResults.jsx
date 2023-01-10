@@ -1,40 +1,20 @@
-import { useEffect, useState } from "react"
+import { useEffect, useContext } from "react"
 import axios from 'axios'
 import Spinner from "../layout/Spinner"
 import SongItem from "./SongItem"
+import SpotifyContext from "../../context/spotify/SpotifyContext"
+
+const CLIENT_ID = '16674063711c49c69684d5fd1af7b2b4'
+const REDIRECT_URI = "http://localhost:5173"
+const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize"
+const RESPONSE_TYPE = "token"
 
 function SongResults() {
-  const CLIENT_ID = '16674063711c49c69684d5fd1af7b2b4'
-  const REDIRECT_URI = "http://localhost:5173"
-  const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize"
-  const RESPONSE_TYPE = "token"
+  const { token, songs, loading, logout, fetchSongs } = useContext(SpotifyContext)
 
-  const [token, setToken] = useState("")
-  const [songs, setSongs] = useState([])
-  const [loading, setLoading] = useState(false)
-
-
-
-  const fetchSongs = async (token) => {
-    console.log("TOKEN: " + token)
-    const {data} = await axios.get("https://api.spotify.com/v1/search", {
-      headers: {
-          Authorization: `Bearer ${token}`
-      },
-      params: {
-          q: "watermelon",
-          type: "track"
-      }
-    })
-    console.log(data.tracks.items)
-    setSongs(data.tracks.items)
-    setLoading(false)
-  }
-
-  const logout = () => {
-    setToken("")
-    window.localStorage.removeItem("token")
-  }
+  useEffect(() => {
+    fetchSongs(token)
+  }, [])
 
   if (!token) {
     return (
@@ -49,7 +29,7 @@ function SongResults() {
             <SongItem key={song.id} song={song}/>
           ))}
         </div>
-        <button onClick={logout}>Logout</button>
+        <button className='mt-10' onClick={logout}>Logout</button>
       </>
        )
     } else {

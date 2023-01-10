@@ -1,17 +1,17 @@
-import { createContext, useEffect, useState } from 'react'
+import { createContext, useEffect, useState, useReducer } from 'react'
 import axios from 'axios'
-
+import spotifyReducer from './SpotifyReducer'
 const SpotifyContext = createContext()
 
-const CLIENT_ID = '16674063711c49c69684d5fd1af7b2b4'
-const REDIRECT_URI = "http://localhost:5173"
-const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize"
-const RESPONSE_TYPE = "token"
-
 export const SpotifyProvider = ({children}) => {
-  const [token, setToken] = useState("")
-  const [songs, setSongs] = useState([])
-  const [loading, setLoading] = useState(false)
+  const initialState = {
+    token: '',
+    songs: [],
+    song: {},
+    loading: true
+  }
+
+  const [state, dispatch] = useReducer(spotifyReducer, initialState)
 
   useEffect(() => {
     const hash = window.location.hash
@@ -22,30 +22,68 @@ export const SpotifyProvider = ({children}) => {
         window.location.hash = ""
         window.localStorage.setItem("token", token)
     }
-    setToken(token)
-    fetchSongs(token)
+    dispatch({
+      type: 'SET_TOKEN',
+      payload: token
+    })
   }, [])
 
-  const fetchSongs = async (token) => {
+  const fetchSongs = async (text) => {
+    setLoading()
+    let token = window.localStorage.getItem("token")
     console.log("TOKEN: " + token)
     const {data} = await axios.get("https://api.spotify.com/v1/search", {
       headers: {
           Authorization: `Bearer ${token}`
       },
       params: {
-          q: "watermelon",
+          q: text,
           type: "track"
       }
     })
-    console.log(data.tracks.items)
-    setSongs(data.tracks.items)
-    setLoading(false)
+    dispatch({
+      type: 'GET_SONGS',
+      payload: data.tracks.items
+    })
   }
 
+  const fetchSongDetails = async (id) => {
+    setLoading()
+    let token = window.localStorage.getItem("token")
+    const {data} = await axios.get(`https://api.spotify.com/v1/tracks/${id}`, {
+      headers: {
+          Authorization: `Bearer ${token}`
+      }
+    })
+
+    if ({data}.status === 404) {
+      window.location = '/notfound'
+    } else {
+      dispatch({
+        type: 'GET_SONG_DETAILS',
+        payload: {data}
+      })
+    }
+  }
+
+  const logout = () => {
+    setToken("")
+    window.localStorage.removeItem("token")
+  }
+
+  const clearSongs = () => { dispatch({type: 'CLEAR_USERS'}) }
+
+  const setLoading = () => dispatch({type: 'SET_LOADING'})
+
   return <SpotifyContext.Provider value={{
-    token,
-    songs,
-    loading
+    token: state.token,
+    songs: state.songs,
+    song: state.song,
+    loading: state.loading,
+    fetchSongs,
+    fetchSongDetails,
+    clearSongs,
+    logout
   }}>
     {children}
   </SpotifyContext.Provider>

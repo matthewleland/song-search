@@ -1,8 +1,12 @@
 import SongResults from "../components/songs/SongResults"
+import SongSearch from "../components/songs/SongSearch"
 
 function Home() {
   return (
-    <SongResults />
+    <>
+      <SongSearch />
+      <SongResults />
+    </>
   )
 }
 
