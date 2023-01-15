@@ -25,10 +25,21 @@ function Song() {
 
           <div className="grid grid-cols-1 xl:grid-cols-3 lg:grid-cols-3 md:grid-cols-3 mb-8 md:gap-8">
             <div className="custom-card-image mb-6 md:mb-0">
-              <div className="rounded-lg shadow-xl card image-full">
+              <div className="rounded-xl shadow-xl card image-full">
                 <figure>
                   <img src={song.data.album.images[0].url} alt="" />
                 </figure>
+                <div className="card-body justify-end">
+                  <h2 className="card-title mb-0">{song.data.name}</h2>
+                  <p>{song.data.artists[0].name}</p>
+                </div>
+              </div>
+            </div>
+            <div className="col-span-2">
+              <div className="mb-6">
+                <h1 className="text-3xl card-title">
+                  {song.data.artists[0].name}
+                </h1>
               </div>
             </div>
           </div>

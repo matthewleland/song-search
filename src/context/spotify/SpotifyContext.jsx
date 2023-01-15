@@ -14,8 +14,9 @@ export const SpotifyProvider = ({children}) => {
   const [state, dispatch] = useReducer(spotifyReducer, initialState)
 
   useEffect(() => {
+    let token = ''
     const hash = window.location.hash
-    let token = window.localStorage.getItem("token")
+    token = window.localStorage.getItem("token")
 
     if (!token && hash) {
         token = hash.substring(1).split("&").find(elem => elem.startsWith("access_token")).split("=")[1]
